@@ -1,7 +1,6 @@
 import socket
 import threading
 import nmap
-from scapy.all import ARP, Ether, srp
 
 def scan_host(ip_address):
     """
@@ -29,50 +28,33 @@ def scan_host(ip_address):
     
 # Scan host moet doorverwijzen naar de andere functies, en deze functies halen allemaal apart de waardes op en format ze terug als F string. alles returnen naar scan_host, en deze returned het naar main.
 
-def scan_subnet(ip_subnet):
+def scan_subnet(subnet):
     """
     Scan subnet
     """
-    arp = ARP(pdst=ip_subnet)
-    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-    packet = ether/arp
-    result = srp(packet, timeout=3 ,verbose=0)[0]
-
-    clients = []
-
-    for sent, received in result:
-        clients.append({'ip': received.psrc, 'mac': received.hwsrc})
-
-    print("beschikbare devices: ")
-    print("IP" + " " * 18+"MAC")
-    for client in clients:
-        print("{:16}    {}".format(client['ip'], client['mac']))
+    # TODO
+    print("Scan subnet")
 
 def get_mac_address(ip_address):
-    """
-    Verkrijg MAC adres door ARP
-    """
-    arp = ARP(pdst=ip_address)
-    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-    packet = ether/arp
-    result = srp(packet, timeout=3, verbose=0)[0]
-    return result[0][1].hwsrc
+    mac_address = 10
+
 
 def is_port_open(ip_address, port):
     """
-    Check of de TCP poort open is op een host met de gegeven IP.
+    Checks if a TCP port is open on a host with a given IP address.
     """
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(0.1)
+        sock.settimeout(1)
         result = sock.connect_ex((ip_address, port))
         return result == 0
 
+
 def detect_open_ports(ip_address):
     """
-    Detecteert de open staande poorten op de host met de gegeven IP.
+    Detects the open ports on a host with a given IP address.
     """
     open_ports = []
-    for port in range(1, 500):
+    for port in range(1, 750):
         if is_port_open(ip_address, port):
             open_ports.append(port)
     return open_ports
@@ -130,11 +112,11 @@ def format_output(hosts):
     # TODO
 
 def main():
-    choice = input("Kies een optie: \n 1. Scan Host \n 2. Scan Subnet \n")
+    choice = input("Kies een optie: 1. Scan Host, 2. Scan Subnet.")
     if choice == '1':
         functions = (scan_host, detect_services, detect_os)
     elif choice == '2':
-        functions = (scan_subnet,)
+        functions = (scan_subnet, detect_services, detect_os)
     else:
         print("Invalid choice")
         return
