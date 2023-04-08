@@ -8,23 +8,23 @@ def scan_host(ip_address):
     Scans a single host and returns a tuple containing the IP address, MAC address, open ports, hostname (if available),
     and operating system (if available)
     """
-    # # Get the MAC address of the host
+    # getMac van de host
     mac_address = get_mac_address(ip_address)
 
-    # Scan for open ports on the host
+    # Scan voor openstaande poorten op de host.
     open_ports = detect_open_ports(ip_address)
 
-    # # Scan voor services op poorten.
+    # # Scan voor de services op de poorten.
     # services = detect_services(ip_address)
 
-    # # Get the hostname of the host (if available)
-    # hostname = get_hostname(ip_address)
+    # Get de hostname van de host (als het beschikbaar is).
+    hostname = get_hostname(ip_address)
 
-    # # Get the operating system of the host (if available)
-    # os_name = detect_os(ip_address)
+    # Get the operating system of the host (if available)
+    os_name = detect_os(ip_address)
 
     # Return the results as a formatted string
-    return f'IP address: {ip_address}\nMAC address: {mac_address}\nOpen ports: {", ".join(str(port) for port in open_ports)}'
+    return f'IP address: {ip_address}\nMAC address: {mac_address}\nOpen ports: {", ".join(str(port) for port in open_ports)} \nHostname: {hostname}\n Operating system: {os_name}' 
 
     
 # Scan host moet doorverwijzen naar de andere functies, en deze functies halen allemaal apart de waardes op en format ze terug als F string. alles returnen naar scan_host, en deze returned het naar main.
@@ -72,20 +72,20 @@ def detect_open_ports(ip_address):
     Detecteert de open staande poorten op de host met de gegeven IP.
     """
     open_ports = []
-    for port in range(1, 500):
+    for port in range(1, 80):
         if is_port_open(ip_address, port):
             open_ports.append(port)
     return open_ports
 
-# def get_hostname(ip_address):
-#     """
-#     Gets the hostname of a host with a given IP address.
-#     """
-#     try:
-#         hostname = socket.gethostbyaddr(ip_address)[0]
-#     except socket.herror:
-#         hostname = 'Niet gevonden biach'
-#     return hostname
+def get_hostname(ip_address):
+    """
+    Verkrijg de hostname van het opgegeven IP adres via DNS.
+    """
+    try:
+        hostname = socket.gethostbyaddr(ip_address)[0]
+    except socket.herror:
+        hostname = 'Wij zijn mannen die geen host nodig hebben, no cap.'
+    return hostname
 
 # def detect_services(ip_address):
 #     """

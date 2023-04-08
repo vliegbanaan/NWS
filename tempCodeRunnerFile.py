@@ -1,1 +1,1 @@
-scan_subnet
+Enter the IP address or subnet to scan
