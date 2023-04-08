@@ -14,18 +14,17 @@ def scan_host(ip_address):
     # Scan voor openstaande poorten op de host.
     open_ports = detect_open_ports(ip_address)
 
-    # # Scan voor de services op de poorten.
-    # services = detect_services(ip_address)
-
     # Get de hostname van de host (als het beschikbaar is).
     hostname = get_hostname(ip_address)
+
+    # Scan voor de services op de poorten.
+    services = detect_services(ip_address)
 
     # Get the operating system of the host (if available)
     os_name = detect_os(ip_address)
 
     # Return the results as a formatted string
-    return f'IP address: {ip_address}\nMAC address: {mac_address}\nOpen ports: {", ".join(str(port) for port in open_ports)} \nHostname: {hostname}\n Operating system: {os_name}' 
-
+    return f'IP address: {ip_address}\nMAC address: {mac_address}\nOpen ports: {", ".join(str(port) for port in open_ports)} \nHostname: {hostname}\n Operating system: {os_name}, \n Detected services: {detect_services}' 
     
 # Scan host moet doorverwijzen naar de andere functies, en deze functies halen allemaal apart de waardes op en format ze terug als F string. alles returnen naar scan_host, en deze returned het naar main.
 
@@ -87,27 +86,27 @@ def get_hostname(ip_address):
         hostname = 'Wij zijn mannen die geen host nodig hebben, no cap.'
     return hostname
 
-# def detect_services(ip_address):
-#     """
-#     Detects the services running on open ports of a host with a given IP address.
-#     """
-#     nm = nmap.PortScanner()
-#     nm.scan(hosts=ip_address, arguments='-sS -sV --version-all')
-#     services = {}
-#     for host in nm.all_hosts():
-#         for port in nm[host]['tcp']:
-#             if nm[host]['tcp'][port]['state'] == 'open':
-#                 services[port] = nm[host]['tcp'][port]['name']
-#     return services
+def detect_services(ip_address):
+    """
+    Detects the services running on open ports of a host with a given IP address.
+    """
+    nm = nmap.PortScanner()
+    nm.scan(hosts=ip_address, arguments='-sS -sV --version-all')
+    services = {}
+    for host in nm.all_hosts():
+        for port in nm[host]['tcp']:
+            if nm[host]['tcp'][port]['state'] == 'open':
+                services[port] = nm[host]['tcp'][port]['name']
+    return services
 
-# def detect_os(ip_address):
-#     """
-#     Detects the operating system of a host with a given IP address.
-#     """
-#     nm = nmap.PortScanner()
-#     nm.scan(hosts=ip_address, arguments='-O')
-#     os_name = nm[ip_address]['osmatch'][0]['name']
-#     return os_name
+def detect_os(ip_address):
+    """
+    Detects the operating system of a host with a given IP address.
+    """
+    nm = nmap.PortScanner()
+    nm.scan(hosts=ip_address, arguments='-A')
+    os_name = nm[ip_address]['osmatch'][0]['name']
+    return os_name
 
 def detect_services(ip_address):
     """
@@ -115,13 +114,6 @@ def detect_services(ip_address):
     """
     # TODO
     print("Detect Services")
-
-def detect_os(ip_address):
-    """
-    Hier komt detecteer OS
-    """
-    # TODO
-    print("Detect OS")
 
 def format_output(hosts):
     """
@@ -136,10 +128,10 @@ def main():
     elif choice == '2':
         functions = (scan_subnet,)
     else:
-        print("Invalid choice")
+        print("Ongeldige keuze, Kies 1 of 2.")
         return
 
-    argument = input("Enter the IP address or subnet to scan: ")
+    argument = input("Geef het IP adres op van de host, of het IP van de subnet: ")
     for function in functions:
         result = function(argument)
         print(result)
