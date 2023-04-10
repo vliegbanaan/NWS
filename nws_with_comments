@@ -66,11 +66,11 @@ def get_mac_address(ip_address):
     Return:
         Retouneer het MAC adres als deze gevonden is, anders een none.
     """
-    arp = ARP(pdst=ip_address)
-    ether = Ether(dst="ff:ff:ff:ff:ff:ff")
-    packet = ether/arp
-    result = srp(packet, timeout=3, verbose=0)[0]
-    return result[0][1].hwsrc
+    arp = ARP(pdst=ip_address)                                                              #Maak Scapy object van het type ARP.                                                              
+    ether = Ether(dst="ff:ff:ff:ff:ff:ff")                                                  #Maak Scapy object van het type Ether (frame). De bestemming van de frame is het broadcast MAC.
+    packet = ether/arp                                                                      #Combineer de twee objecten tot 1 packet. Dit is nodig om het ARP-verzoek te versturen.
+    result = srp(packet, timeout=3, verbose=0)[0]                                           #Verstuur packet naar alle apparaten, wacht 3 seconden op reactie en return een lijst met IP en MAC addressen.
+    return result[0][1].hwsrc                                                               #Return het MAC adres van het eerste apparaat van het ARP-verzoek, Elke tuple in de lijst heeft 2 elementen waar de eerste gestuurde packet is en tweede het antwoord van het apparaat.
 
 def is_port_open(ip_address, port):
     """
@@ -83,14 +83,14 @@ def is_port_open(ip_address, port):
     Return:
         boolean: False als port gesloten is, True als poort open is.
     """
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        sock.settimeout(0.1)
-        result = sock.connect_ex((ip_address, port))
-        return result == 0
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:                         #Open socket en gebruik TCP om verbinding te maken.
+        sock.settimeout(0.1)                                                                #Time-out in van 0.1 seconden voor het opzetten verbinding met de host en poort.
+        result = sock.connect_ex((ip_address, port))                                        #Poging verbinding met IP-adres en poort, status verbinding wordt opgeslagen in result.
+        return result == 0                                                                  #Vergelijk result met nul. Bij true is poort open, bij False is poort dicht.
 
 def detect_open_ports(ip_address):
     """
-    Detecteert de open staande poorten op de host met de gegeven IP. je kan de range opgeven tussen de 1 en 65535.
+    Scan de open staande poorten op de host met de gegeven IP. je kan de range opgeven tussen de 1 en 65535.
 
     Parameter:
         ip_address(str): Het IP adres van de host waar de poorten gescanned worden.
@@ -98,15 +98,15 @@ def detect_open_ports(ip_address):
     Return:
         List: Een lijst met openstaande poorten van de host die gescanned is.
     """
-    open_ports = []
-    for port in range(1, 70):
-        if is_port_open(ip_address, port):
-            open_ports.append(port)
+    open_ports = []                                                                         #Maak lege lijst.
+    for port in range(1, 1024):                                                             #Range poorten die gescanned moeten worden.
+        if is_port_open(ip_address, port):                                                  #For loop voor het scannen van alle poorten. Loop is variabel maar in ons geval 1-1024 omdat in dit gebied de meest gebruikte poorten zijn.
+            open_ports.append(port)                                                         #Als poort open is, wordt deze toegevoegd aan lijst open_ports.
     return open_ports
 
 def get_hostname(ip_address):
     """
-    Verkrijg de hostname van het opgegeven IP adres via DNS.
+    Probeer de hostname van het opgegeven IP adres via DNS te verkrijgen.
 
     Parameter:
         ip_address(str) : Het ip adres van de host waar de hostname van moet worden verkregen.
@@ -115,10 +115,10 @@ def get_hostname(ip_address):
         String : De hostname van de opgegeven host als deze gevonden kan worden, anders retouneert er een foutmelding.
     """
     try:
-        hostname = socket.gethostbyaddr(ip_address)[0]
-    except socket.herror:
+        hostname = socket.gethostbyaddr(ip_address)[0]                                      #Hostname wordt opgevraagd d.m.v. DNS. 
+    except socket.herror:                                                                   #Als de hostname niet kan worden gevonden, zal socket.herror activeert worden en wordt er een foutmelding geretourneerd.
         hostname = 'Hostname is helaas niet gevonden, big sad UwU'
-    return hostname
+    return hostname                                                                         #Return de hostname of foutmelding.
 
 def detect_services(ip_address):
     """
@@ -131,13 +131,13 @@ def detect_services(ip_address):
         Een dictionary van de poorten met de naam van de service die op de poort draait.
         Als er geen openstaande poorten gevonden worden, wordt er een lege dictionary geretourneerd.
     """
-    nm = nmap.PortScanner()
-    nm.scan(hosts=ip_address, arguments='-sS -sV --version-all')
-    services = {}
-    for host in nm.all_hosts():
-        for port in nm[host]['tcp']:
-            if nm[host]['tcp'][port]['state'] == 'open':
-                services[port] = nm[host]['tcp'][port]['name']
+    nm = nmap.PortScanner()                                                                 #Maak een instantie van Nmap portscanner en wijs variabel nm toe.
+    nm.scan(hosts=ip_address, arguments='-sS -sV --version-all')                            #Start scan met IP-adres. -sS = SYN-scan, -sV = Versie detectie, --version-all = zoveel mogelijk versie info verzamelen, sla deze results op in nm.
+    services = {}                                                                           #Maak lege dictionary.
+    for host in nm.all_hosts():                                                             #Loop door alle host(s) in nmap scan resultaten.
+        for port in nm[host]['tcp']:                                                        #Loop over alle poorten van het TCP-protocol die draaien bij de host.
+            if nm[host]['tcp'][port]['state'] == 'open':                                    
+                services[port] = nm[host]['tcp'][port]['name']                              #Als de status van de poort open is word de poort + naam van de service toegevoegd aan de services dictionary.
     return services
 
 def detect_os(ip_address):
@@ -150,9 +150,9 @@ def detect_os(ip_address):
     Return:
         String: De naam van het besturingssysteem als deze is gevonden, anders wordt er none geretourneerd.
     """
-    nm = nmap.PortScanner()
-    nm.scan(hosts=ip_address, arguments='-A')
-    os_name = nm[ip_address]['osmatch'][0]['name']
+    nm = nmap.PortScanner()                                                                 #Maak een instantie van Nmap portscanner en wijs variabel nm toe.
+    nm.scan(hosts=ip_address, arguments='-A')                                               #Start scan op het IP-adres. -A staat voor aggresief die enkele functies activeert van nmap, waaronder versie detectie en operating system detectie.
+    os_name = nm[ip_address]['osmatch'][0]['name']                                          #Zoek het OS van IP-adres met nmap en sla de naam op in os_name.
     return os_name
 
 def main():
@@ -174,18 +174,19 @@ def main():
 
     Na het kiezen van optie 2 worden de respectievelijke functies uitgevoerd.
     """
-    choice = input("Kies een optie: \n 1. Scan Host \n 2. Scan Subnet \n Keuze: ")
+
+    choice = input("Kies een optie: \n 1. Scan Host \n 2. Scan Subnet \n Keuze: ")          #Geef gebruiker keuze uit Scan host of Scan subnet.
     if choice == '1':
-        functions = (scan_host,)
+        functions = (scan_host,)                                                            #Als keuze 1 wordt gemaakt wordt scan host als functie gekozen.
     elif choice == '2':
-        functions = (scan_subnet,)
+        functions = (scan_subnet,)                                                          #Als keuze 2 wordt gemaakt wordt scan subnet als functie gekozen.
     else:
-        print("Ongeldige keuze, Kies 1 of 2.")
+        print("Ongeldige keuze, Kies 1 of 2.")                                              #Als er iets anders dan 1-2 ingevuld word geef foutmelding.
         return
 
-    argument = input("Geef het IP adres op van de host, of het IP van de subnet: ")
+    argument = input("Geef het IP adres op van de host, of het IP van de subnet: ")         #Vraag gebruiker om Ip-adres van host of subnet, geef dit IP als argument mee voor de respectievelijke gekozen functie.
     for function in functions:
-        result = function(argument)
+        result = function(argument)                                                         #Loop door functies heen en geef bij elke functie de agrument (IP-adres) mee.
         print(result)
 
 if __name__ == '__main__':
