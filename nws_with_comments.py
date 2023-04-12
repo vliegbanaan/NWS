@@ -54,7 +54,7 @@ def scan_subnet(ip_subnet):
     print("beschikbare apparaten: ")
     print("IP" + " " * 18+"MAC")
     for client in clients:
-        print("{:16}    {}".format(client['ip'], client['mac']))                            #Loop door clients heen, print gevonden IP en mac addressen. Ip addressen worden afgedrukt in kolom van 16 chars en MAC in een volgende kolom.
+        print("{:16}    {}".format(client['ip'], client['mac']))                            #Loop door clients heen, print gevonden IP en mac addressen. Ip addressen worden afgedrukt in kolom van 16 chars en MAC in het volgende kolom.
 
 def get_mac_address(ip_address):
     """
